@@ -1,0 +1,46 @@
+FROM php:8.1.2-apache
+
+RUN apt-get update && apt-get upgrade -y
+
+# php error logging
+COPY .docker/conf/php/error-logging.ini     /usr/local/etc/php/conf.d/error-logging.ini
+# php conf
+COPY .docker/conf/php/app.ini               /usr/local/etc/php/conf.d/app.ini
+#Copy php dev conf
+COPY .docker/conf/php/dev.ini               /usr/local/etc/php/conf.d/dev.ini
+##Copy virtualhost.conf
+COPY .docker/conf/apache/virtualhost.conf   /etc/apache2/sites-available/000-default.conf
+##Copy env file
+COPY .env.local   /var/www/html/.env
+
+#Install necessary packages
+RUN echo 'deb [trusted=yes] https://repo.symfony.com/apt/ /' | tee /etc/apt/sources.list.d/symfony-cli.list \
+    && apt update \
+    && apt install -y symfony-cli libicu-dev zip unzip git \
+    && docker-php-ext-configure intl \
+    && docker-php-ext-install intl mysqli pdo pdo_mysql
+
+#Add bash aliases
+RUN echo "alias ll=\"ls -alF\"" >> ~/.bashrc
+
+# Install composer
+RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
+    && php composer-setup.php \
+    && php -r "unlink('composer-setup.php');"  \
+    && mv composer.phar /usr/local/bin/composer
+
+# XDebug
+RUN yes | pecl install xdebug \
+    && echo "#Xdebug configuration" >> /usr/local/etc/php/conf.d/dev.ini \
+    && echo "zend_extension=$(find /usr/local/lib/php/extensions/ -name xdebug.so)" >> /usr/local/etc/php/conf.d/dev.ini \
+    && echo "xdebug.mode=debug,coverage" >> /usr/local/etc/php/conf.d/dev.ini \
+    && echo "xdebug.discover_client_host = 1" >> /usr/local/etc/php/conf.d/dev.ini \
+    && echo "xdebug.start_with_request=no" >> /usr/local/etc/php/conf.d/dev.ini \
+    && echo "xdebug.client_host=localhost" >> /usr/local/etc/php/conf.d/dev.ini
+
+
+# Default workdir
+WORKDIR /var/www/html
+
+#Enable Apache mod rewrite
+RUN a2enmod rewrite

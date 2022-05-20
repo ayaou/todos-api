@@ -1,0 +1,31 @@
+networks:
+  dbnet:
+    external: true
+    name: dbnet
+  traefik-proxy:
+    external: true
+    name: traefik-proxy
+services:
+  database:
+    image: mysql:8.0
+    container_name: "symfony54-mysql"
+    command: --default-authentication-plugin=mysql_native_password
+    env_file:
+      - ../.env.local
+    ports:
+      - '4306:3306'
+    volumes:
+      - ../mysql:/var/lib/mysql
+  web:
+    container_name: "symfony54-php"
+    env_file:
+      - ../.env.local
+    build:
+      context: ../
+      dockerfile: .docker/Dockerfile.local
+    volumes:
+      - ../web:/var/www/html/
+    ports:
+      - '8888:80'
+    restart: unless-stopped
+version: '3.5'

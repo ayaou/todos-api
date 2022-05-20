@@ -1,0 +1,4 @@
+info:
+  path: /info
+  controller: App\Controller\SymfonyController::info
+  methods: GET
