@@ -1,4 +1,28 @@
-info:
-  path: /info
-  controller: App\Controller\SymfonyController::info
+task-today:
+  path: /api/task
+  controller: App\Controller\TaskController::today
   methods: GET
+
+task-today-done:
+  path: /api/task/done
+  controller: App\Controller\TaskController::todayDone
+  methods: GET
+
+task-today-undone:
+  path: /api/task/undone
+  controller: App\Controller\TaskController::todayUndone
+  methods: GET
+
+task-done:
+  path: /api/task/{taskId}/done
+  controller: App\Controller\TaskController::doneTask
+  methods: PATCH
+  requirements:
+    taskId: '\d+'
+
+task-undone:
+  path: /api/task/{taskId}/undone
+  controller: App\Controller\TaskController::undoneTask
+  methods: PATCH
+  requirements:
+    taskId: '\d+'

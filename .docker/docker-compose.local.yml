@@ -12,8 +12,6 @@ services:
     command: --default-authentication-plugin=mysql_native_password
     env_file:
       - ../.env.local
-    ports:
-      - '4306:3306'
     volumes:
       - ../mysql:/var/lib/mysql
   web:
